@@ -6,7 +6,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 
 
@@ -14,7 +13,7 @@ import android.view.MenuItem;
 // IMPLEMENTAR dicho método en esta actividad.
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener {
+        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.MapaFragmentListener {
     private DrawerLayout drawerLayout;
     private NavigationView navView;
 
@@ -60,11 +59,17 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                                 break;
                             case R.id.optVerMapa:
                                 //TODO HABILITAR
-                                //tag="mapaReclamos";
-                               // fragment =  getSupportFragmentManager().findFragmentByTag(tag);
+                                tag="mapaReclamos";
+                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
                                 //TODO si "fragment" es null entonces crear el fragmento mapa, agregar un bundel con el parametro tipo_mapa
-                                // configurar a la actividad como listener de los eventos del mapa ((MapaFragment) fragment).setListener(this);
-                               // fragmentTransaction = true;
+                                if(fragment==null) {
+                                    fragment = new MapaFragment();
+                                    ((MapaFragment) fragment).setListener(MainActivity.this);
+                                }
+                                Bundle b = (new Bundle());
+                                b.putInt("tipo_mapa",0);
+                                fragment.setArguments(b);
+                                fragmentTransaction = true;
                                 break;
                             case R.id.optHeatMap:
                                 //TODO HABILITAR
