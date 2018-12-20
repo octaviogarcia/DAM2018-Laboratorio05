@@ -5,7 +5,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -15,14 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
@@ -30,6 +26,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
  */
 
 public class MapaFragment extends SupportMapFragment implements OnMapReadyCallback {
+    public static final int VER_MAPA = 0;
+    public static final int OBTENER_COORDENADAS = 1;
+
     private GoogleMap miMapa;
 
     private int tipoMapa = 0;
@@ -41,7 +40,6 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         if(argumentos !=null) {
             tipoMapa = argumentos .getInt("tipo_mapa",0);
         }
-
         getMapAsync(this);
 
         return rootView;
@@ -49,6 +47,16 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     @Override public void onMapReady(GoogleMap map) {
         miMapa = map;
         miMapa.getUiSettings().setZoomControlsEnabled(true);
+
+        if(tipoMapa == OBTENER_COORDENADAS){
+            miMapa.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+                @Override
+                public void onMapLongClick(LatLng latLng) {
+                    listener.coordenadasSeleccionadas(latLng);
+                }
+            });
+        }
+
         if (ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -77,7 +85,10 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         miMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(pos,15));
     }
 
-    public interface MapaFragmentListener {};
+    public interface MapaFragmentListener {
+        public void coordenadasSeleccionadas(LatLng c);
+    }
+
     public MapaFragmentListener listener;
     public void setListener(MapaFragmentListener mainActivity) {
         listener = mainActivity;
