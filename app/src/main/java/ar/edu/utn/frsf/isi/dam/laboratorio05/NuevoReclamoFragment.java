@@ -2,8 +2,6 @@ package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +17,8 @@ import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.ReclamoDao;
 
 public class NuevoReclamoFragment extends Fragment {
+
+
 
     public interface OnNuevoLugarListener {
         public void obtenerCoordenadas();
