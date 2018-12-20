@@ -36,7 +36,6 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         if(argumentos !=null) {
             tipoMapa = argumentos .getInt("tipo_mapa",0);
         }
-        Log.d("ASDADS","ASDASD");
         getMapAsync(this);
 
         return rootView;
