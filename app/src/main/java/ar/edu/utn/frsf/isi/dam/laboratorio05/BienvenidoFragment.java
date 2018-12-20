@@ -12,7 +12,6 @@ import android.view.ViewGroup;
  */
 public class BienvenidoFragment extends Fragment {
 
-
     public BienvenidoFragment() {
         // Required empty public constructor
     }

@@ -1,6 +1,10 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
@@ -9,14 +13,32 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+
 
 // AGREGAR en MapaFragment una interface MapaFragment.OnMapaListener con el método coordenadasSeleccionadas 
 // IMPLEMENTAR dicho método en esta actividad.
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener {
+        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.MapaFragmentListener {
     private DrawerLayout drawerLayout;
     private NavigationView navView;
+
+
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    public void obtenerLocation(OnSuccessListener<Location> callback) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+                &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                        PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(this, callback);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 .beginTransaction()
                 .replace(R.id.contenido, fragmentInicio)
                 .commit();
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         navView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
@@ -60,11 +84,17 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                                 break;
                             case R.id.optVerMapa:
                                 //TODO HABILITAR
-                                //tag="mapaReclamos";
-                               // fragment =  getSupportFragmentManager().findFragmentByTag(tag);
+                                tag="mapaReclamos";
+                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
                                 //TODO si "fragment" es null entonces crear el fragmento mapa, agregar un bundel con el parametro tipo_mapa
-                                // configurar a la actividad como listener de los eventos del mapa ((MapaFragment) fragment).setListener(this);
-                               // fragmentTransaction = true;
+                                if(fragment==null) {
+                                    fragment = new MapaFragment();
+                                    ((MapaFragment) fragment).setListener(MainActivity.this);
+                                }
+                                Bundle b = (new Bundle());
+                                b.putInt("tipo_mapa",0);
+                                fragment.setArguments(b);
+                                fragmentTransaction = true;
                                 break;
                             case R.id.optHeatMap:
                                 //TODO HABILITAR
@@ -150,4 +180,12 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             // a seleccionar la coordenada donde se registra el reclamo
             // configurar a la actividad como listener de los eventos del mapa ((MapaFragment) fragment).setListener(this);
         }
+
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        getSupportFragmentManager().getFragments().get(0).onRequestPermissionsResult(requestCode,permissions,grantResults);
+    }
+
+
 }
