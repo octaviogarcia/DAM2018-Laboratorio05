@@ -17,13 +17,17 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
+
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.MapaFragmentListener,ListaReclamosFragment.OnListaReclamosListener{
+        NuevoReclamoFragment.OnNuevoLugarListener,
+        MapaFragment.OnMapaFragmentListener,
+        ListaReclamosFragment.OnListaReclamosListener,
+        FormularioBusquedaFragment.OnFormularioBusquedaListener {
+
     private DrawerLayout drawerLayout;
     private NavigationView navView;
-
-
     private FusedLocationProviderClient mFusedLocationClient;
 
     public void obtenerLocation(OnSuccessListener<Location> callback) {
@@ -58,54 +62,62 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-
                         boolean fragmentTransaction = false;
                         Fragment fragment = null;
                         String tag = "";
                         switch (menuItem.getItemId()) {
-                            case R.id.optNuevoReclamo:
+                            case R.id.optNuevoReclamo: {
                                 tag = "nuevoReclamoFragment";
-                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-                                if(fragment==null) {
+                                fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                                if (fragment == null) {
                                     fragment = new NuevoReclamoFragment();
                                     ((NuevoReclamoFragment) fragment).setListener(MainActivity.this);
                                 }
 
                                 fragmentTransaction = true;
-                                break;
-                            case R.id.optListaReclamo:
-                                tag="listaReclamos";
-                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-                                if(fragment==null){
+                            }break;
+                            case R.id.optListaReclamo: {
+                                tag = "listaReclamos";
+                                fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                                if (fragment == null) {
                                     fragment = new ListaReclamosFragment();
                                     ((ListaReclamosFragment) fragment).setListener(MainActivity.this);
                                 }
                                 fragmentTransaction = true;
-                                break;
-                            case R.id.optVerMapa:
-                                tag="mapaReclamos";
-                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-                                if(fragment==null) {
+                            }break;
+                            case R.id.optVerMapa: {
+                                tag = "mapaReclamos";
+                                fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                                if (fragment == null) {
                                     fragment = new MapaFragment();
                                     ((MapaFragment) fragment).setListener(MainActivity.this);
                                 }
                                 Bundle b = (new Bundle());
-                                b.putInt("tipo_mapa",MapaFragment.MOSTRAR_RECLAMOS);
+                                b.putInt("tipo_mapa", MapaFragment.MOSTRAR_RECLAMOS);
                                 fragment.setArguments(b);
                                 fragmentTransaction = true;
-                                break;
-                            case R.id.optHeatMap:
-                                tag="mapaReclamos";
-                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-                                if(fragment==null) {
+                            }break;
+                            case R.id.optHeatMap: {
+                                tag = "mapaReclamos";
+                                fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                                if (fragment == null) {
                                     fragment = new MapaFragment();
                                     ((MapaFragment) fragment).setListener(MainActivity.this);
                                 }
-                                Bundle b2 = (new Bundle());
-                                b2.putInt("tipo_mapa",MapaFragment.MOSTRAR_HEATMAP);
-                                fragment.setArguments(b2);
+                                Bundle b = (new Bundle());
+                                b.putInt("tipo_mapa", MapaFragment.MOSTRAR_HEATMAP);
+                                fragment.setArguments(b);
                                 fragmentTransaction = true;
-                                break;
+                            }break;
+                            case R.id.optFormularioBusqueda: {
+                                tag = "formularioBusqueda";
+                                fragment = getSupportFragmentManager().findFragmentByTag(tag);
+                                if (fragment == null) {
+                                    fragment = new FormularioBusquedaFragment();
+                                    ((FormularioBusquedaFragment) fragment).setListener(MainActivity.this);
+                                }
+                                fragmentTransaction = true;
+                            }break;
                         }
 
                         if(fragmentTransaction) {
@@ -126,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                     }
                 });
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -165,12 +178,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                     .commit();
     }
 
-
-
-
     @Override
     public void obtenerCoordenadas() {
-
         Fragment fragment = getSupportFragmentManager().findFragmentByTag("mapaReclamos");
         //TODO si "fragment" es null entonces crear el fragmento mapa, agregar un bundel con el parametro tipo_mapa
         if(fragment==null) {
@@ -196,7 +205,6 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         Bundle args = new Bundle();
         args.putInt("tipo_mapa",MapaFragment.MOSTRAR_RECLAMO);
         args.putInt("idReclamo",id);
-        // setear los parametros tipo_mapa y idReclamo en el Bundle args
         f.setArguments(args);
         getSupportFragmentManager()
                 .beginTransaction()
@@ -212,4 +220,22 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
 
+    @Override
+    public void mapaFormularioBusqueda(Reclamo.TipoReclamo tipoReclamo) {
+        Fragment f = getSupportFragmentManager().findFragmentByTag("mapaReclamos");
+        if(f==null) {
+            f = new MapaFragment();
+            ((MapaFragment) f).setListener(this);
+        }
+        Bundle args = new Bundle();
+        args.putInt("tipo_mapa",MapaFragment.MOSTRAR_BUSQUEDA);
+        args.putString("tipo_reclamo",tipoReclamo.toString());
+        f.setArguments(args);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, f)
+                .addToBackStack(null)
+                .commit();
+
+    }
 }

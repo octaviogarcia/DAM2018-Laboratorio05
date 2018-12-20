@@ -23,6 +23,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
@@ -44,12 +45,14 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     public static final int MOSTRAR_RECLAMOS = 2;
     public static final int MOSTRAR_RECLAMO = 3;
     public static final int MOSTRAR_HEATMAP = 4;
+    public static final int MOSTRAR_BUSQUEDA = 5;
     private static final int PADDING = 100;
 
     private GoogleMap miMapa;
     private ReclamoDao reclamoDao;
     private int tipoMapa = 0;
     private int idReclamo = -1;
+    private Reclamo.TipoReclamo tipoReclamo = null;
     public MapaFragment() { }
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
@@ -58,7 +61,10 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         if(argumentos !=null) {
             tipoMapa = argumentos.getInt("tipo_mapa",0);
             idReclamo = argumentos.getInt("idReclamo",-1);
+            String strTipoReclamo = argumentos.getString("tipo_reclamo",null);
+            if(strTipoReclamo != null) tipoReclamo = Reclamo.TipoReclamo.valueOf(strTipoReclamo);
         }
+
         reclamoDao = MyDatabase.getInstance(getActivity()).getReclamoDao();
         getMapAsync(this);
 
@@ -172,6 +178,44 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         Thread thread = new Thread(setearHeatmap);
         thread.start();
     }
+    void handleMostrarBusqueda() {
+        Runnable setearBusqueda = new Runnable() {
+            @Override
+            public void run() {
+                List<Reclamo> reclamos = reclamoDao.getAll();
+                if(reclamos == null || reclamos.isEmpty()) return;
+
+                final List<Reclamo> reclamos_filtrados = new ArrayList<>();
+                if(tipoReclamo != null){
+                    for(Reclamo r : reclamos){
+                        if(r.getTipo().equals(tipoReclamo)) reclamos_filtrados.add(r);
+                    }
+                }
+
+                if(reclamos_filtrados.isEmpty()) return;
+
+                final List<LatLng> list = obtenerCoordenadas(reclamos_filtrados);
+                final LatLngBounds limite = obtenerLimite(list);
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(limite,PADDING));
+                        PolylineOptions polylineOptions = new PolylineOptions();
+                        for(Reclamo r : reclamos_filtrados){
+                            LatLng latLng = new LatLng(r.getLatitud(),r.getLongitud());
+                            miMapa.addMarker(new MarkerOptions().position(latLng).title(r.getReclamo()));
+                            polylineOptions.add(latLng).color(Color.RED);
+                        }
+                        miMapa.addPolyline(polylineOptions);
+                    }
+                });
+            }
+        };
+        Thread thread = new Thread(setearBusqueda);
+        thread.start();
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
         miMapa = map;
@@ -189,6 +233,9 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         else if(tipoMapa == MOSTRAR_HEATMAP){
             handleMostrarHeatmap();
         }
+        else if(tipoMapa == MOSTRAR_BUSQUEDA){
+            handleMostrarBusqueda();
+        }
 
         if (ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
@@ -205,6 +252,8 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
 
 
     }
+
+
 
     @SuppressLint("MissingPermission")
     private void terminarCarga(){
@@ -226,12 +275,12 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         miMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(pos,15));
     }
 
-    public interface MapaFragmentListener {
+    public interface OnMapaFragmentListener {
         public void coordenadasSeleccionadas(LatLng c);
     }
 
-    public MapaFragmentListener listener;
-    public void setListener(MapaFragmentListener mainActivity) {
+    public OnMapaFragmentListener listener;
+    public void setListener(OnMapaFragmentListener mainActivity) {
         listener = mainActivity;
 
     }
