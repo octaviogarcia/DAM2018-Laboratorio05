@@ -1,11 +1,13 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
+import android.content.pm.PackageManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 
@@ -155,4 +157,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
             // a seleccionar la coordenada donde se registra el reclamo
             // configurar a la actividad como listener de los eventos del mapa ((MapaFragment) fragment).setListener(this);
         }
+
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+
+        getSupportFragmentManager().getFragments().get(0).onRequestPermissionsResult(requestCode,permissions,grantResults);
+    }
 }
