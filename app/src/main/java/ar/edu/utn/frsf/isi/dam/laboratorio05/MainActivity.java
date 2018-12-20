@@ -19,7 +19,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.MapaFragmentListener {
+        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.MapaFragmentListener,ListaReclamosFragment.OnListaReclamosListener{
     private DrawerLayout drawerLayout;
     private NavigationView navView;
 
@@ -76,7 +76,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                             case R.id.optListaReclamo:
                                 tag="listaReclamos";
                                 fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-                                if(fragment==null) fragment = new ListaReclamosFragment();
+                                if(fragment==null){
+                                    fragment = new ListaReclamosFragment();
+                                    ((ListaReclamosFragment) fragment).setListener(MainActivity.this);
+                                }
                                 fragmentTransaction = true;
                                 break;
                             case R.id.optVerMapa:
@@ -163,24 +166,42 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
 
 
-        @Override
-        public void obtenerCoordenadas() {
+    @Override
+    public void obtenerCoordenadas() {
 
-            Fragment fragment = getSupportFragmentManager().findFragmentByTag("mapaReclamos");
-            //TODO si "fragment" es null entonces crear el fragmento mapa, agregar un bundel con el parametro tipo_mapa
-            if(fragment==null) {
-                fragment = new MapaFragment();
-                ((MapaFragment) fragment).setListener(MainActivity.this);
-            }
-
-            Bundle b = (new Bundle());
-            b.putInt("tipo_mapa",MapaFragment.OBTENER_COORDENADAS);
-            fragment.setArguments(b);
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.contenido, fragment,"mapaReclamos")
-                    .commit();
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag("mapaReclamos");
+        //TODO si "fragment" es null entonces crear el fragmento mapa, agregar un bundel con el parametro tipo_mapa
+        if(fragment==null) {
+            fragment = new MapaFragment();
+            ((MapaFragment) fragment).setListener(MainActivity.this);
         }
+
+        Bundle b = (new Bundle());
+        b.putInt("tipo_mapa",MapaFragment.OBTENER_COORDENADAS);
+        fragment.setArguments(b);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, fragment,"mapaReclamos")
+                .commit();
+    }
+
+    public void mostrarReclamo(int id){
+        Fragment f = getSupportFragmentManager().findFragmentByTag("mapaReclamos");
+        if(f==null) {
+            f = new MapaFragment();
+            ((MapaFragment) f).setListener(this);
+        }
+        Bundle args = new Bundle();
+        args.putInt("tipo_mapa",MapaFragment.MOSTRAR_RECLAMO);
+        args.putInt("idReclamo",id);
+        // setear los parametros tipo_mapa y idReclamo en el Bundle args
+        f.setArguments(args);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, f)
+                .addToBackStack(null)
+                .commit();
+    }
 
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
