@@ -23,8 +23,11 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.MyDatabase;
@@ -40,6 +43,8 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     public static final int OBTENER_COORDENADAS = 1;
     public static final int MOSTRAR_RECLAMOS = 2;
     public static final int MOSTRAR_RECLAMO = 3;
+    public static final int MOSTRAR_HEATMAP = 4;
+    private static final int PADDING = 100;
 
     private GoogleMap miMapa;
     private ReclamoDao reclamoDao;
@@ -60,6 +65,33 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         return rootView;
     }
 
+    LatLngBounds obtenerLimite(List<LatLng> latLngs){
+        if(latLngs == null || latLngs.isEmpty()) return null;
+
+        double minLat = Double.POSITIVE_INFINITY;
+        double minLong = Double.POSITIVE_INFINITY;
+        double maxLat = Double.NEGATIVE_INFINITY;
+        double maxLong = Double.NEGATIVE_INFINITY;
+        for(LatLng l : latLngs) {
+            if (l.latitude > maxLat) maxLat = l.latitude;
+            if (l.latitude < minLat) minLat = l.latitude;
+            if (l.longitude > maxLong) maxLong = l.longitude;
+            if (l.longitude < minLong) minLong = l.longitude;
+        }
+        LatLng min = new LatLng(minLat,minLong);
+        LatLng max = new LatLng(maxLat,maxLong);
+        return new LatLngBounds(min,max);
+    }
+    List<LatLng> obtenerCoordenadas(List<Reclamo> reclamos){
+        List<LatLng> list = new ArrayList<>();
+        if(reclamos == null || reclamos.isEmpty()) return list;
+        for(Reclamo r : reclamos){
+            LatLng latLng = new LatLng(r.getLatitud(),r.getLongitud());
+            list.add(latLng);
+        }
+        return list;
+    }
+
     void handleObtenerCoordenadas(){
         miMapa.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
@@ -73,28 +105,13 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
             @Override
             public void run() {
                 final List<Reclamo> reclamos = reclamoDao.getAll();
-                if(reclamos.isEmpty()) return;
-                double minLat = Double.POSITIVE_INFINITY;
-                double minLong = Double.POSITIVE_INFINITY;
-                double maxLat = Double.NEGATIVE_INFINITY;
-                double maxLong = Double.NEGATIVE_INFINITY;
-                for(Reclamo r : reclamos) {
-                    double lat = r.getLatitud();
-                    double lon = r.getLongitud();
-                    if (lat > maxLat) maxLat = lat;
-                    if (lat < minLat) minLat = lat;
-                    if (lon > maxLong) maxLong = lon;
-                    if (lon < minLong) minLong = lon;
-                }
-
-                LatLng min = new LatLng(minLat,minLong);
-                LatLng max = new LatLng(maxLat,maxLong);
-                final LatLngBounds limite = new LatLngBounds(min,max);
+                if(reclamos == null || reclamos.isEmpty()) return;
+                final LatLngBounds limite = obtenerLimite(obtenerCoordenadas(reclamos));
 
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(limite,100));
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(limite,PADDING));
                         for(Reclamo r : reclamos){
                             LatLng latLng = new LatLng(r.getLatitud(),r.getLongitud());
                             miMapa.addMarker(new MarkerOptions().position(latLng).title(r.getReclamo()));
@@ -106,7 +123,6 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         Thread thread = new Thread(setearMarkers);
         thread.start();
     }
-
     void handleMostrarReclamo(){
         Runnable setearMarkers = new Runnable() {
             @Override
@@ -134,6 +150,28 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         Thread thread = new Thread(setearMarkers);
         thread.start();
     }
+    void handleMostrarHeatmap(){
+        Runnable setearHeatmap = new Runnable() {
+            @Override
+            public void run() {
+                final List<Reclamo> reclamos = reclamoDao.getAll();
+                if(reclamos == null || reclamos.isEmpty()) return;
+                final List<LatLng> list = obtenerCoordenadas(reclamos);
+                final LatLngBounds limite = obtenerLimite(list);
+                final HeatmapTileProvider heatmap = new HeatmapTileProvider.Builder().data(list).radius(50).build();
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        miMapa.addTileOverlay(new TileOverlayOptions().tileProvider(heatmap));
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(limite,PADDING));
+                    }
+                });
+            }
+        };
+        Thread thread = new Thread(setearHeatmap);
+        thread.start();
+    }
     @Override
     public void onMapReady(GoogleMap map) {
         miMapa = map;
@@ -147,6 +185,9 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         }
         else if(tipoMapa == MOSTRAR_RECLAMO){
             handleMostrarReclamo();
+        }
+        else if(tipoMapa == MOSTRAR_HEATMAP){
+            handleMostrarHeatmap();
         }
 
         if (ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)
