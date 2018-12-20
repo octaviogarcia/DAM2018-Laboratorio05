@@ -48,6 +48,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     }
     @Override public void onMapReady(GoogleMap map) {
         miMapa = map;
+        miMapa.getUiSettings().setZoomControlsEnabled(true);
         if (ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -58,6 +59,8 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                     1);
             return;
         }
+        
+        miMapa.setMyLocationEnabled(true);
 
         ((MainActivity) getActivity()).obtenerLocation(new OnSuccessListener<Location>() {
             @Override
@@ -70,8 +73,6 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
 
     @SuppressLint("MissingPermission")
     private void terminarCarga(Location location){
-        miMapa.setMyLocationEnabled(true);
-        miMapa.getUiSettings().setZoomControlsEnabled(true);
         LatLng pos = new LatLng(location.getLatitude(),location.getLongitude());
         miMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(pos,15));
     }
@@ -83,6 +84,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
 
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         for(int i = 0;i<grantResults.length;i++) {
@@ -93,7 +95,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                 Log.d("PERMISOS", "Permitido " + permissions[i]);
             }
         }
-
+        miMapa.setMyLocationEnabled(true);
         ((MainActivity) getActivity()).obtenerLocation(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
