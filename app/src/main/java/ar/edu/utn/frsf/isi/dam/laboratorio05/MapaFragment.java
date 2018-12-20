@@ -4,6 +4,7 @@ package ar.edu.utn.frsf.isi.dam.laboratorio05;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -37,17 +39,20 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     public static final int VER_MAPA = 0;
     public static final int OBTENER_COORDENADAS = 1;
     public static final int MOSTRAR_RECLAMOS = 2;
+    public static final int MOSTRAR_RECLAMO = 3;
 
     private GoogleMap miMapa;
     private ReclamoDao reclamoDao;
     private int tipoMapa = 0;
+    private int idReclamo = -1;
     public MapaFragment() { }
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
 
         Bundle argumentos = getArguments();
         if(argumentos !=null) {
-            tipoMapa = argumentos .getInt("tipo_mapa",0);
+            tipoMapa = argumentos.getInt("tipo_mapa",0);
+            idReclamo = argumentos.getInt("idReclamo",-1);
         }
         reclamoDao = MyDatabase.getInstance(getActivity()).getReclamoDao();
         getMapAsync(this);
@@ -101,6 +106,34 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         Thread thread = new Thread(setearMarkers);
         thread.start();
     }
+
+    void handleMostrarReclamo(){
+        Runnable setearMarkers = new Runnable() {
+            @Override
+            public void run() {
+                final Reclamo reclamo = reclamoDao.getById(idReclamo);
+                if(reclamo == null) return;
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LatLng latLng = new LatLng(reclamo.getLatitud(),reclamo.getLongitud());
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+                        miMapa.addMarker(new MarkerOptions()
+                                .position(latLng)
+                                .title(reclamo.getReclamo()));
+                        miMapa.addCircle(new CircleOptions()
+                                .center(latLng)
+                                .radius(500)
+                                .fillColor(Color.parseColor("#32FF0000"))
+                                .strokeColor(Color.RED));
+                    }
+                });
+            }
+        };
+        Thread thread = new Thread(setearMarkers);
+        thread.start();
+    }
     @Override
     public void onMapReady(GoogleMap map) {
         miMapa = map;
@@ -111,6 +144,9 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         }
         else if(tipoMapa == MOSTRAR_RECLAMOS){
             handleMostrarReclamos();
+        }
+        else if(tipoMapa == MOSTRAR_RECLAMO){
+            handleMostrarReclamo();
         }
 
         if (ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.ACCESS_FINE_LOCATION)
@@ -134,7 +170,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         miMapa.setMyLocationEnabled(true);
 
         //Si estoy mostrando reclamos no lo muevo a la locacion actual
-        if(tipoMapa == MOSTRAR_RECLAMOS) return;
+        if(tipoMapa != VER_MAPA) return;
 
         ((MainActivity) getActivity()).obtenerLocation(new OnSuccessListener<Location>() {
             @Override
