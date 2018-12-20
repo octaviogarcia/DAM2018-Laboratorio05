@@ -4,6 +4,7 @@ package ar.edu.utn.frsf.isi.dam.laboratorio05;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,12 +15,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,6 +31,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapaFragment extends SupportMapFragment implements OnMapReadyCallback {
     private GoogleMap miMapa;
+
     private int tipoMapa = 0;
     public MapaFragment() { }
     @Override public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -36,6 +41,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         if(argumentos !=null) {
             tipoMapa = argumentos .getInt("tipo_mapa",0);
         }
+
         getMapAsync(this);
 
         return rootView;
@@ -53,13 +59,21 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
             return;
         }
 
-        terminarCarga();
+        ((MainActivity) getActivity()).obtenerLocation(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                terminarCarga(location);
+            }
+        });
 
     }
 
     @SuppressLint("MissingPermission")
-    private void terminarCarga(){
+    private void terminarCarga(Location location){
         miMapa.setMyLocationEnabled(true);
+        miMapa.getUiSettings().setZoomControlsEnabled(true);
+        LatLng pos = new LatLng(location.getLatitude(),location.getLongitude());
+        miMapa.moveCamera(CameraUpdateFactory.newLatLngZoom(pos,15));
     }
 
     public interface MapaFragmentListener {};
@@ -80,6 +94,11 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
             }
         }
 
-        terminarCarga();
+        ((MainActivity) getActivity()).obtenerLocation(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                terminarCarga(location);
+            }
+        });
     }
 }
