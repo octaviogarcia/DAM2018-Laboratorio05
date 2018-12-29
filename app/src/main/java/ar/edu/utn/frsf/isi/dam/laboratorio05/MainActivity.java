@@ -1,9 +1,11 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -29,6 +31,9 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private DrawerLayout drawerLayout;
     private NavigationView navView;
     private FusedLocationProviderClient mFusedLocationClient;
+
+
+
 
     public void obtenerLocation(OnSuccessListener<Location> callback) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -237,5 +242,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                 .addToBackStack(null)
                 .commit();
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
     }
 }
