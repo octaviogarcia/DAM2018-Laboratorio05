@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -59,6 +60,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@android:drawable/ic_menu_camera" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Audio" />
+
+    <ToggleButton
+        android:id="@+id/toggleGrabar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grabar"
+        android:textOff="Grabar"
+        android:textOn="Finalizar"
+        tools:text="Finalizar" />
+
+    <Button
+        android:id="@+id/btnReproducir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reproducir" />
 
     <Button
         android:id="@+id/btnGuardar"
