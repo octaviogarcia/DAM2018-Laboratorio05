@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     private DrawerLayout drawerLayout;
     private NavigationView navView;
     private FusedLocationProviderClient mFusedLocationClient;
-
+    private static final int REQCODE_RECORD_AUDIO = 999;
 
 
 
@@ -142,6 +142,12 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                         return true;
                     }
                 });
+
+        if (ActivityCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    REQCODE_RECORD_AUDIO);
+        }
     }
 
     @Override
@@ -220,8 +226,10 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-
-        getSupportFragmentManager().getFragments().get(0).onRequestPermissionsResult(requestCode,permissions,grantResults);
+        if(requestCode == REQCODE_RECORD_AUDIO){
+            //Nada, no tenemos permisos.
+        }
+        else getSupportFragmentManager().getFragments().get(0).onRequestPermissionsResult(requestCode,permissions,grantResults);
     }
 
 

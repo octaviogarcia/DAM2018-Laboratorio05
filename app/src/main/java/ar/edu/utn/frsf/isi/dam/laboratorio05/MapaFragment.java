@@ -243,7 +243,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                 != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
                     1);
             return;
         }
