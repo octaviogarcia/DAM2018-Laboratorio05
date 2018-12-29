@@ -18,9 +18,12 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -112,24 +115,46 @@ public class NuevoReclamoFragment extends Fragment {
             idReclamo = getArguments().getInt("idReclamo",-1);
         }
 
+
+        cargarReclamo(idReclamo);
+
         if(ActivityCompat.checkSelfPermission(getActivity(),Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             toggleGrabar.setEnabled(false);
         }
 
-        cargarReclamo(idReclamo);
-
 
         boolean edicionActivada = !tvCoord.getText().toString().equals("0;0");
-        reclamoDesc.setEnabled(edicionActivada );
+        reclamoDesc.setEnabled(edicionActivada);
+        reclamoDesc.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                validarFormulario();
+            }
+        });
         mail.setEnabled(edicionActivada );
         tipoReclamo.setEnabled(edicionActivada);
         btnGuardar.setEnabled(edicionActivada);
+        toggleGrabar.setEnabled(edicionActivada);
+        imgFoto.setEnabled(edicionActivada);
+        tipoReclamo.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                validarFormulario();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                btnGuardar.setEnabled(false);
+            }
+        });
 
         buscarCoord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 listener.obtenerCoordenadas();
-
             }
         });
 
@@ -189,7 +214,10 @@ public class NuevoReclamoFragment extends Fragment {
                     mRecorder.stop();
                     mRecorder.release();
                     mRecorder = null;
-                    if(!pathAudio.isEmpty()) btnReproducir.setEnabled(true);
+                    if(!pathAudio.isEmpty()) {
+                        btnReproducir.setEnabled(true);
+                    }
+                    validarFormulario();
                 }
             }
         });
@@ -304,6 +332,7 @@ public class NuevoReclamoFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == REQCODE_IMAGE_CAPTURE && resultCode == getActivity().RESULT_OK){
             imgFoto.setImageBitmap(getThumbnail(pathFoto,THUMBNAIL_WIDTH,THUMBNAIL_HEIGHT));
+            validarFormulario();
         }
     }
 
@@ -327,5 +356,20 @@ public class NuevoReclamoFragment extends Fragment {
         matrix.postRotate(90);
         thumbnail = Bitmap.createBitmap(thumbnail,0,0,width,height,matrix,true);
         return thumbnail;
+    }
+
+    private void validarFormulario(){
+        Reclamo.TipoReclamo tipo = (Reclamo.TipoReclamo) tipoReclamoAdapter.getItem(tipoReclamo.getSelectedItemPosition());
+        if(tipo.equals(Reclamo.TipoReclamo.VEREDAS) || tipo.equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
+            if(!pathFoto.isEmpty()){
+                btnGuardar.setEnabled(true);
+                return;
+            }
+        }
+        else if (reclamoDesc.getText().length() >= 8 || !pathAudio.isEmpty()){
+            btnGuardar.setEnabled(true);
+            return;
+        }
+        btnGuardar.setEnabled(false);
     }
 }
