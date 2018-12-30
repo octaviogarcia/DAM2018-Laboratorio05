@@ -17,6 +17,11 @@ public class MyDatabase {
         return _INSTANCIA_UNICA;
     }
 
+    public static void reset(){
+        _INSTANCIA_UNICA.db.close();
+        _INSTANCIA_UNICA = null;
+    }
+
     private AppDatabase db;
     private ReclamoDao reclamoDao;
 

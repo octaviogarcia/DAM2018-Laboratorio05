@@ -6,6 +6,7 @@ import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
 
 import static org.junit.Assert.assertEquals;
 
+
 public class NuevoReclamoUnitTest {
     NuevoReclamoFragment nuevoReclamoFragment;
 

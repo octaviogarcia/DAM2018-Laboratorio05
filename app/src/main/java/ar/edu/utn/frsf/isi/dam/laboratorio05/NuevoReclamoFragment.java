@@ -304,15 +304,17 @@ public class NuevoReclamoFragment extends Fragment {
                     @Override
                     public void run() {
                         // limpiar vista
-                        reclamoActual = new Reclamo();
+                        tvCoord.setText("0;0");
                         mail.setText(R.string.texto_vacio);
-                        tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
                         imgFoto.setImageDrawable(defaultDrawable);
                         pathFoto = "";
                         pathAudio = "";
                         btnReproducir.setEnabled(false);
+                        btnGuardar.setEnabled(false);
                         getActivity().getFragmentManager().popBackStack();
+
+                        reclamoActual = new Reclamo();
                     }
                 });
             }
@@ -381,5 +383,21 @@ public class NuevoReclamoFragment extends Fragment {
             return true;
         }
         return false;
+    }
+
+    public String getPathAudio() {
+        return pathAudio;
+    }
+
+    public void setPathAudio(String pathAudio) {
+        this.pathAudio = pathAudio;
+    }
+
+    public String getPathFoto() {
+        return pathFoto;
+    }
+
+    public void setPathFoto(String pathFoto) {
+        this.pathFoto = pathFoto;
     }
 }
