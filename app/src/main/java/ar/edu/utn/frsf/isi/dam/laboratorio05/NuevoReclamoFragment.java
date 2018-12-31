@@ -43,7 +43,7 @@ import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.ReclamoDao;
 
 public class NuevoReclamoFragment extends Fragment {
-    private static final int REQCODE_IMAGE_CAPTURE = 1;
+    public static final int REQCODE_IMAGE_CAPTURE = 1;
     private static final int THUMBNAIL_WIDTH = 256;
     private static final int THUMBNAIL_HEIGHT = 256;
 
@@ -373,6 +373,7 @@ public class NuevoReclamoFragment extends Fragment {
     }
 
     public boolean esValido(){
+        if(reclamoActual.getLatitud()==0 && reclamoActual.getLongitud()==0) return false;
         Reclamo.TipoReclamo tipo = reclamoActual.getTipo();
         if(reclamoActual.getTipo().equals(Reclamo.TipoReclamo.VEREDAS) || reclamoActual.getTipo().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
             if(!reclamoActual.getPathFoto().isEmpty()){

@@ -1,9 +1,5 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
-import android.preference.EditTextPreference;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,19 +10,14 @@ import android.widget.ToggleButton;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import org.apache.tools.ant.Main;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.MyDatabase;
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
@@ -113,7 +104,7 @@ public class NuevoReclamoRoboelectricTest {
         if(tipoElegir.equals(Reclamo.TipoReclamo.VEREDAS) || tipoElegir.equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
             nuevoReclamoFragment.setPathFoto("pathfoto");
             //"Retorna" de volver de la camara
-            nuevoReclamoFragment.onActivityResult(1,activity.RESULT_OK,null);
+            nuevoReclamoFragment.onActivityResult(NuevoReclamoFragment.REQCODE_IMAGE_CAPTURE,activity.RESULT_OK,null);
 
             assertEquals(true,btnGuardar.isEnabled());
 
