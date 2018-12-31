@@ -43,7 +43,7 @@ import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
 import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.ReclamoDao;
 
 public class NuevoReclamoFragment extends Fragment {
-    private static final int REQCODE_IMAGE_CAPTURE = 1;
+    public static final int REQCODE_IMAGE_CAPTURE = 1;
     private static final int THUMBNAIL_WIDTH = 256;
     private static final int THUMBNAIL_HEIGHT = 256;
 
@@ -291,17 +291,9 @@ public class NuevoReclamoFragment extends Fragment {
     }
 
     private void saveOrUpdateReclamo(){
-        reclamoActual.setEmail(mail.getText().toString());
-        reclamoActual.setReclamo(reclamoDesc.getText().toString());
-        reclamoActual.setTipo(tipoReclamoAdapter.getItem(tipoReclamo.getSelectedItemPosition()));
-        reclamoActual.setPathFoto(pathFoto);
-        reclamoActual.setPathAudio(pathAudio);
+        validarFormulario();
+        if(!esValido()) return;
 
-        if(tvCoord.getText().toString().length()>0 && tvCoord.getText().toString().contains(";")) {
-            String[] coordenadas = tvCoord.getText().toString().split(";");
-            reclamoActual.setLatitud(Double.valueOf(coordenadas[0]));
-            reclamoActual.setLongitud(Double.valueOf(coordenadas[1]));
-        }
         Runnable hiloActualizacion = new Runnable() {
             @Override
             public void run() {
@@ -312,14 +304,17 @@ public class NuevoReclamoFragment extends Fragment {
                     @Override
                     public void run() {
                         // limpiar vista
+                        tvCoord.setText("0;0");
                         mail.setText(R.string.texto_vacio);
-                        tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
                         imgFoto.setImageDrawable(defaultDrawable);
                         pathFoto = "";
                         pathAudio = "";
                         btnReproducir.setEnabled(false);
+                        btnGuardar.setEnabled(false);
                         getActivity().getFragmentManager().popBackStack();
+
+                        reclamoActual = new Reclamo();
                     }
                 });
             }
@@ -359,17 +354,51 @@ public class NuevoReclamoFragment extends Fragment {
     }
 
     private void validarFormulario(){
-        Reclamo.TipoReclamo tipo = (Reclamo.TipoReclamo) tipoReclamoAdapter.getItem(tipoReclamo.getSelectedItemPosition());
-        if(tipo.equals(Reclamo.TipoReclamo.VEREDAS) || tipo.equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
-            if(!pathFoto.isEmpty()){
-                btnGuardar.setEnabled(true);
-                return;
+        reclamoActual.setEmail(mail.getText().toString());
+        reclamoActual.setReclamo(reclamoDesc.getText().toString());
+        reclamoActual.setTipo(tipoReclamoAdapter.getItem(tipoReclamo.getSelectedItemPosition()));
+        reclamoActual.setPathFoto(pathFoto);
+        reclamoActual.setPathAudio(pathAudio);
+        if(tvCoord.getText().toString().length()>0 && tvCoord.getText().toString().contains(";")) {
+            String[] coordenadas = tvCoord.getText().toString().split(";");
+            reclamoActual.setLatitud(Double.valueOf(coordenadas[0]));
+            reclamoActual.setLongitud(Double.valueOf(coordenadas[1]));
+        }
+        btnGuardar.setEnabled(esValido());
+    }
+
+    public void setReclamoActual(Reclamo reclamo){
+        if(reclamo == null) return;
+        reclamoActual = reclamo;
+    }
+
+    public boolean esValido(){
+        if(reclamoActual.getLatitud()==0 && reclamoActual.getLongitud()==0) return false;
+        Reclamo.TipoReclamo tipo = reclamoActual.getTipo();
+        if(reclamoActual.getTipo().equals(Reclamo.TipoReclamo.VEREDAS) || reclamoActual.getTipo().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
+            if(!reclamoActual.getPathFoto().isEmpty()){
+                return true;
             }
         }
-        else if (reclamoDesc.getText().length() >= 8 || !pathAudio.isEmpty()){
-            btnGuardar.setEnabled(true);
-            return;
+        else if (reclamoActual.getReclamo().length() >= 8 || !reclamoActual.getPathAudio().isEmpty()){
+            return true;
         }
-        btnGuardar.setEnabled(false);
+        return false;
+    }
+
+    public String getPathAudio() {
+        return pathAudio;
+    }
+
+    public void setPathAudio(String pathAudio) {
+        this.pathAudio = pathAudio;
+    }
+
+    public String getPathFoto() {
+        return pathFoto;
+    }
+
+    public void setPathFoto(String pathFoto) {
+        this.pathFoto = pathFoto;
     }
 }
