@@ -30,6 +30,14 @@ public class ListaReclamosFragment extends Fragment {
         // Required empty public constructor
     }
 
+    private OnListaReclamosListener listener;
+    public void setListener(OnListaReclamosListener l) {
+        listener = l;
+    }
+    interface OnListaReclamosListener{
+        void mostrarReclamo(int id);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,14 +87,7 @@ public class ListaReclamosFragment extends Fragment {
 
         @Override
         public void mostrarMapa(int id) {
-            Fragment f = null;// setear el fragmento del mapa
-            Bundle args = new Bundle();
-            // setear los parametros tipo_mapa y idReclamo en el Bundle args
-            f.setArguments(args);
-            getActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.contenido, f)
-                    .commit();
+            listener.mostrarReclamo(id);
         }
     };
 

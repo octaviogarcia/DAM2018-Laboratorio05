@@ -48,6 +48,38 @@
         android:id="@+id/reclamo_tipo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"></Spinner>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Foto" />
+
+    <ImageView
+        android:id="@+id/imgFoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_camera" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Audio" />
+
+    <ToggleButton
+        android:id="@+id/toggleGrabar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grabar"
+        android:textOff="Grabar"
+        android:textOn="Finalizar"
+        tools:text="Finalizar" />
+
+    <Button
+        android:id="@+id/btnReproducir"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reproducir" />
+
     <Button
         android:id="@+id/btnGuardar"
         android:text="Guardar"
